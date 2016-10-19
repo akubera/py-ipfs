@@ -1,9 +1,17 @@
+#!/usr/bin/env python
+#
+# setup.py
+#
+
 import os
 import re
 import sys
 import setuptools
 from setuptools.command.test import test as TestCommand
+from importlib.machinery import SourceFileLoader
 
+# import metadata file
+metadata = SourceFileLoader("metadata", "ipfs/__meta__.py").load_module()
 
 class PyTest(TestCommand):
     user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
@@ -23,15 +31,8 @@ class PyTest(TestCommand):
         sys.exit(errno)
 
 
-PKG_DIR = os.path.dirname(__file__)
-with open(os.path.join(PKG_DIR, 'ipfs', '__init__.py')) as VERSION_FILE:
-    VERSION = (re.compile(r".*__version__ = '(.*?)'", re.S)
-                 .match(VERSION_FILE.read())
-                 .group(1))
-
-
-# The python package index understands .rst but we send it .md anyways.
-with open(os.path.join(os.path.dirname(__file__), 'README.md')) as README_FILE:
+# The python package index understands .rst
+with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as README_FILE:
     README = README_FILE.read()
 
 
@@ -41,9 +42,9 @@ setuptools.setup(
     long_description=README,
     author='bmcorser',
     author_email='bmcorser@gmail.com',
-    version=VERSION,
+    version=metadata.version,
     packages=setuptools.find_packages(),
-    tests_require=['pytest'],
+    tests_require=['pytest', 'pytest-asyncio', 'pytest-runner'],
     install_requires=['six'],
     cmdclass={'test': PyTest},
 )
